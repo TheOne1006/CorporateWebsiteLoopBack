@@ -1,0 +1,183 @@
+{
+  "name": "Admin",
+  "base": "User",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true,
+    "mysql": {
+      "table": "xl_admin"
+    }
+  },
+  "properties": {
+    "description": {
+      "type": "String",
+      "mysql": {
+        "columnName": "description",
+        "dataType": "VARCHAR",
+        "dataLength": 300,
+        "nullable": "N",
+        "comment": "描述"
+      }
+    },
+    "email": {
+      "type": "String",
+      "required": true,
+      "index": {
+        "unique": true
+      },
+      "doc": "邮箱",
+      "mysql": {
+        "columnName": "email",
+        "dataType": "VARCHAR",
+        "dataLength": 100
+      }
+    },
+    "password": {
+      "type": "string",
+      "doc": "密码",
+      "mysql": {
+        "columnName": "password",
+        "dataType": "VARCHAR",
+        "dataLength": 150,
+        "nullable": "N"
+      }
+    },
+    "username": {
+      "type": "string",
+      "index": {
+        "unique": true
+      },
+      "doc": "用户名",
+      "mysql": {
+        "columnName": "username",
+        "dataType": "VARCHAR",
+        "dataLength": 30,
+        "nullable": "N"
+      }
+    },
+    "mobile": {
+      "type": "string",
+      "doc": "手机号码",
+      "mysql": {
+        "columnName": "mobile",
+        "dataType": "VARCHAR",
+        "dataLength": 20
+      }
+    },
+    "created": {
+      "type": "number",
+      "doc": "创建时间",
+      "mysql": {
+        "columnName": "created",
+        "dataType": "VARCHAR",
+        "dataLength": 20
+      }
+    },
+    "lastUpdated": {
+      "type": "number",
+      "doc": "最后修改时间",
+      "mysql": {
+        "columnName": "lastUpdated",
+        "dataType": "VARCHAR",
+        "dataLength": 20
+      }
+    },
+    "status": {
+      "type": "boolean",
+      "doc": "状态是否激活",
+      "default": true,
+      "mysql": {
+        "columnName": "status",
+        "dataType": "TINYINT",
+        "default": "1",
+        "dataLength": 1
+      }
+    },
+    "deleted": {
+      "type": "boolean",
+      "doc": "是否删除",
+      "default": false,
+      "mysql": {
+        "columnName": "deleted",
+        "dataType": "TINYINT",
+        "default": "0",
+        "dataLength": 1
+      }
+    },
+    "emailVerified": {
+      "type": "boolean",
+      "doc": "邮箱是否认证",
+      "default": false,
+      "mysql": {
+        "columnName": "emailVerified",
+        "dataType": "TINYINT",
+        "default": "0",
+        "dataLength": 1
+      }
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [
+    {
+      "accessType": "READ",
+      "principalType": "ROLE",
+      "principalId": "admin",
+      "permission": "ALLOW",
+      "property": "find"
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "admin",
+      "permission": "ALLOW",
+      "property": "findById"
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "$everyone",
+      "permission": "DENY",
+      "property": "create"
+    },
+    {
+      "accessType": "WRITE",
+      "principalType": "ROLE",
+      "principalId": "admin",
+      "permission": "ALLOW",
+      "property": "create"
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "$owner",
+      "permission": "DENY",
+      "property": "deleteById"
+    },
+    {
+      "accessType": "WRITE",
+      "principalType": "ROLE",
+      "principalId": "admin",
+      "permission": "ALLOW",
+      "property": "deleteById"
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "$owner",
+      "permission": "DENY",
+      "property": "updateAttributes"
+    },
+    {
+      "accessType": "WRITE",
+      "principalType": "ROLE",
+      "principalId": "admin",
+      "permission": "ALLOW",
+      "property": "updateAttributes"
+    },
+    {
+      "accessType": "WRITE",
+      "principalType": "ROLE",
+      "principalId": "$owner",
+      "permission": "ALLOW",
+      "property": "updatePassword"
+    }
+  ],
+  "methods": {}
+}

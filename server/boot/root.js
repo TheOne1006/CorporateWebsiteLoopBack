@@ -1,6 +1,8 @@
-module.exports = function(server) {
+/* eslint new-cap: ["error", { "capIsNew": false }]*/
+
+module.exports = (server) => {
   // Install a `/` route that returns server status
-  var router = server.loopback.Router();
+  const router = server.loopback.Router();
   router.get('/', server.loopback.status());
   server.use(router);
 };

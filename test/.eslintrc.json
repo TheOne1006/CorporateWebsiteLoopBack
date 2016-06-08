@@ -4,9 +4,14 @@
         "es6": true,
         "node": true
     },
-    "extends": "airbnb",
+    "globals": {
+      "describe": true,
+      "before": true,
+      "after": true,
+      "it": true
+    },
+    "extends": "eslint:recommended",
     "parserOptions": {
-      "sourceType": "module"
     },
     "plugins": [
     ],
@@ -19,20 +24,16 @@
             "error",
             "unix"
         ],
+        "quotes": [
+            "error",
+            "single"
+        ],
         "semi": [
             "error",
             "always"
         ],
         "no-console":[
             "off"
-        ],
-        "no-param-reassign": [
-            "error",
-            { "props": false }
-        ],
-        "strict": [
-          "warn",
-          "never"
         ]
     }
 }
