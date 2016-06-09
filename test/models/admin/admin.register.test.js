@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * admin 的注册
  * ---------------------
@@ -8,82 +6,82 @@
  * 2. 注册信息验证
  */
 
-var assert = require('assert');
-var async = require('async');
+import assert from 'assert';
+import async from 'async';
 
-var app = require('../../../server/server');
-var help = require('../../help.js');
-var fixtureData = require('../../fixtureData.js');
-var json = help.json;
+import app from '../../../server/server';
+import { json, getAccessTokenByUser } from '../../help.js';
+import { admin, theone, foo, updateUser, deletedUser, statusFalseUser } from '../../fixtureData.js';
+import '../../start-server';
 
+const usersData = [admin, theone, foo, updateUser, deletedUser, statusFalseUser];
 
-var admin = fixtureData.admin;
-var theone = fixtureData.theone;
-var foo = fixtureData.foo;
-var updateUser = fixtureData.updateUser;
-var deletedUser = fixtureData.deletedUser;
-var statusFalseUser = fixtureData.statusFalseUser;
-
-var usersData = [admin, theone, foo, updateUser, deletedUser, statusFalseUser];
-
-var adminAccessToken = '';
-// var adminId = '';
+let fooAccessToken;
+let adminAccessToken;
 
 
-describe('admin register', function() {
+describe('admin register', () => {
+  // before(function(done) {
+  //   require('../../start-server');
+  //   done();
+  // });
 
-  before(function(done) {
-    require('../../start-server');
-    done();
-  });
-
-  after(function(done) {
+  after((done) => {
     app.removeAllListeners('started');
     app.removeAllListeners('loaded');
     done();
   });
 
-  before('初始化移除所有测试数据库数据', function (done) {
-    app.dataSources.mysqlDs.autoupdate('Admin',function (err) {
-      if(err) return done(err);
-
-      async.eachSeries(usersData, function (user, callback) {
-        app.models.Admin.upsert(user, callback);
-      }, done);
+  before('初始化移除所有测试数据库数据', (done) => {
+    app.dataSources.mysqlDs.autoupdate('Admin', (err) => {
+      if (err) {
+        done(err);
+      } else {
+        async.eachSeries(usersData, (user, callback) => {
+          app.models.Admin.upsert(user, callback);
+        }, done);
+      }
     });
   });
 
-  before(function (done) {
-    app.models.Admin.destroyAll({description:'test'}, done);
+  before((done) => {
+    app.models.Admin.destroyAll({ description: 'test' }, done);
   });
 
-  after(function (done) {
-    app.models.Admin.destroyAll({description:'test'}, done);
+  after((done) => {
+    app.models.Admin.destroyAll({ description: 'test' }, done);
   });
 
 
-  before('获取 admin 账号的 access_token', function (done) {
-    help.getAccessTokenByUser(admin, function (err, tokenId) {
-      if(!err) {
+  before('获取 admin 账号的 access_token', (done) => {
+    getAccessTokenByUser(admin, (err, tokenId) => {
+      if (!err) {
         adminAccessToken = tokenId;
       }
       done(err);
     });
   });
 
+  before('获取 foo 账号的 access_token', (done) => {
+    getAccessTokenByUser(foo, (err, tokenId) => {
+      if (!err) {
+        fooAccessToken = tokenId;
+      }
+      done(err);
+    });
+  });
 
 
-
-  describe('不允许非登录用户注册', function () {
-    it('POST /api/admins without access_token', function (done) {
-      json('post','/api/admins')
+  describe('不允许非登录用户注册', () => {
+    it('POST /api/admins without access_token', (done) => {
+      json('post', '/api/admins')
         .send({
           username: 'newUser',
           password: '123456',
           description: 'test',
           email: '291@qq.com',
         })
-        .expect(401, function (err, res) {
+        .expect(401, (err, res) => {
           // assert.equal('Authorization Required', res.body.error.message);
           assert.equal('AUTHORIZATION_REQUIRED', res.body.error.code);
           done(err);
@@ -91,66 +89,47 @@ describe('admin register', function() {
     });
   });
 
-  describe('不允许普通用户注册', function () {
-    var fooAccessToken;
-
-    it('POST /api/admins/login with account foo', function (done) {
-      json('post','/api/admins/login')
-        .send({
-          username: foo.username,
-          password: foo.password,
-        })
-        .expect(200, function (err, res) {
-          if(!err) {
-            fooAccessToken = res.body.id;
-          }
-
-          done(err);
-        });
-    });
-
-    it('POST /api/admins with foo access_token', function (done) {
-      json('post',`/api/admins?access_token=${fooAccessToken}`)
+  describe('不允许普通用户注册', () => {
+    it('POST /api/admins with foo access_token', (done) => {
+      json('post', `/api/admins?access_token=${fooAccessToken}`)
         .send({
           username: 'newUser',
           password: '123456',
           description: 'test',
           email: '291@qq.com',
         })
-        .expect(401, function (err, res) {
+        .expect(401, (err, res) => {
           // console.log(res.body);
           assert.equal('AUTHORIZATION_REQUIRED', res.body.error.code);
           done(err);
         });
     });
-
   });
 
-  describe('只允许 Role admin 注册', function () {
-
-    it('POST /api/admins with admin access_token', function (done) {
-      json('post',`/api/admins?access_token=${adminAccessToken}`)
+  describe('只允许 Role admin 注册', () => {
+    it('POST /api/admins with admin access_token', (done) => {
+      json('post', `/api/admins?access_token=${adminAccessToken}`)
         .send({
           username: 'newUser',
           password: '123456',
           description: 'test',
-          email: '291@qq.com'
+          email: '291@qq.com',
         })
-        .expect(200, function (err, res) {
+        .expect(200, (err, res) => {
           // console.log(res.body);
           assert.equal(res.body.username, 'newUser');
           done(err);
         });
     });
 
-    it('POST /api/admins with admin access_token with out password', function (done) {
-      json('post',`/api/admins?access_token=${adminAccessToken}`)
+    it('POST /api/admins with admin access_token with out password', (done) => {
+      json('post', `/api/admins?access_token=${adminAccessToken}`)
         .send({
           username: 'myTest',
           description: 'test',
-          email: '292@qq.com'
+          email: '292@qq.com',
         })
-        .expect(200, function (err, res) {
+        .expect(200, (err, res) => {
           // console.log(res.body);
           assert.equal('myTest', res.body.username);
           done(err);
@@ -158,17 +137,16 @@ describe('admin register', function() {
     });
 
 
-    describe('注册用户信息 字段验证', function () {
-
-      it('POST /api/admins with admin access_token fields too long', function (done) {
-        json('post',`/api/admins?access_token=${adminAccessToken}`)
+    describe('注册用户信息 字段验证', () => {
+      it('POST /api/admins with admin access_token fields too long', (done) => {
+        json('post', `/api/admins?access_token=${adminAccessToken}`)
           .send({
             username: 'newUserlonglonglonglong',
             password: '1111111111111111111',
             description: 'test',
-            email: 'longlonglong111111'
+            email: 'longlonglong111111',
           })
-          .expect(422, function (err, res) {
+          .expect(422, (err, res) => {
             // console.log(res.body.error.details);
             assert.equal(res.body.error.details.codes.email[0], 'format');
             assert.equal(res.body.error.details.codes.password[0], 'custom');
@@ -177,15 +155,15 @@ describe('admin register', function() {
           });
       });
 
-      it('POST /api/admins with admin access_token fields to short', function (done) {
-        json('post',`/api/admins?access_token=${adminAccessToken}`)
+      it('POST /api/admins with admin access_token fields to short', (done) => {
+        json('post', `/api/admins?access_token=${adminAccessToken}`)
           .send({
             username: 'ne',
             password: '1',
             description: 'test',
-            email: 'wbj@theone.io'
+            email: 'wbj@theone.io',
           })
-          .expect(422, function (err, res) {
+          .expect(422, (err, res) => {
             // console.log(res.body.error.details);
             assert.equal(res.body.error.details.codes.email[0], 'uniqueness');
             assert.equal(res.body.error.details.codes.password[0], 'custom');
@@ -193,17 +171,6 @@ describe('admin register', function() {
             done(err);
           });
       });
-
-
-
     });
-
   });
-
-
 });
-
-
-
-
-// -

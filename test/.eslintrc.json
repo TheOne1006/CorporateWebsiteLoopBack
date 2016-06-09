@@ -10,7 +10,7 @@
       "after": true,
       "it": true
     },
-    "extends": "eslint:recommended",
+    "extends": "airbnb",
     "parserOptions": {
     },
     "plugins": [
