@@ -10,8 +10,9 @@
       "after": true,
       "it": true
     },
-    "extends": "eslint:recommended",
+    "extends": "airbnb",
     "parserOptions": {
+      "sourceType": "module"
     },
     "plugins": [
     ],
@@ -33,6 +34,13 @@
             "always"
         ],
         "no-console":[
+            "off"
+        ],
+        "no-param-reassign":[
+          "error",
+          { "props": false }
+        ],
+        "strict" : [
             "off"
         ]
     }

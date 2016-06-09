@@ -9,81 +9,74 @@
  */
 
 
-var assert = require('assert');
-var async = require('async');
+const assert = require('assert');
+const async = require('async');
 
-var app = require('../../../server/server');
-var help = require('../../help.js');
-var fixtureData = require('../../fixtureData.js');
-var json = help.json;
+const app = require('../../../server/server');
+const help = require('../../help.js');
+const fixtureData = require('../../fixtureData.js');
+const json = help.json;
+const getAccessTokenByUser = help.getAccessTokenByUser;
 
 
-var admin = fixtureData.admin;
-var theone = fixtureData.theone;
-var foo = fixtureData.foo;
-var updateUser = fixtureData.updateUser;
-var deletedUser = fixtureData.deletedUser;
-var statusFalseUser = fixtureData.statusFalseUser;
+const admin = fixtureData.admin;
+const theone = fixtureData.theone;
+const foo = fixtureData.foo;
+const updateUser = fixtureData.updateUser;
+const deletedUser = fixtureData.deletedUser;
+const statusFalseUser = fixtureData.statusFalseUser;
 
-var usersData = [admin, theone, foo, updateUser, deletedUser, statusFalseUser];
-var adminAccessToken;
+const usersData = [admin, theone, foo, updateUser, deletedUser, statusFalseUser];
+let adminAccessToken;
 // var adminId;
 
-describe('admin access', function() {
+describe('admin access', () => {
+  // before((done) => {
+  //   require('../../start-server');
+  //   done();
+  // });
 
-  before(function(done) {
-    require('../../start-server');
-    done();
-  });
-
-  after(function(done) {
+  after((done) => {
     app.removeAllListeners('started');
     app.removeAllListeners('loaded');
     done();
   });
 
-  before('初始化移除所有测试数据库数据', function (done) {
-    app.dataSources.mysqlDs.autoupdate('Admin',function (err) {
-      if(err) return done(err);
-
-      async.eachSeries(usersData, function (user, callback) {
-        app.models.Admin.upsert(user, callback);
-      }, done);
+  before('初始化移除所有测试数据库数据', (done) => {
+    app.dataSources.mysqlDs.autoupdate('Admin', (err) => {
+      if (err) {
+        done(err);
+      } else {
+        async.eachSeries(usersData, (user, callback) => {
+          app.models.Admin.upsert(user, callback);
+        }, done);
+      }
     });
   });
 
-  before('获取 admin 账号的 access_token', function (done) {
-    json('post','/api/admins/login')
-      .send({
-        username: admin.username,
-        password: admin.password
-      })
-      .expect(200, function (err, res) {
-        if(!err) {
-          adminAccessToken = res.body.id;
-        }
-        done(err);
-      });
+  before('获取 admin 账号的 access_token', (done) => {
+    getAccessTokenByUser(admin, (err, tokenId) => {
+      if (!err) {
+        adminAccessToken = tokenId;
+      }
+      done(err);
+    });
   });
 
-  describe('无 token 访问', function () {
-    it('GET /api/admins without access_token', function (done) {
-      json('get','/api/admins')
-        .expect(401, function (err, res) {
+  describe('无 token 访问', () => {
+    it('GET /api/admins without access_token', (done) => {
+      json('get', '/api/admins')
+        .expect(401, (err, res) => {
           assert.equal('AUTHORIZATION_REQUIRED', res.body.error.code);
           done(err);
         });
     });
   });
 
-  describe('带 token 访问', function () {
-
-    it('GET /api/admins with admin access_token', function (done) {
-      json('get','/api/admins?access_token='+adminAccessToken)
+  describe('带 token 访问', () => {
+    it('GET /api/admins with admin access_token', (done) => {
+      json('get', `/api/admins?access_token=${adminAccessToken}`)
         .expect(200, done);
     });
-
   });
-
-
 });

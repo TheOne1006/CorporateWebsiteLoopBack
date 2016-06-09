@@ -8,78 +8,72 @@
  * 2. 用户状态 status 无法登录
  */
 
-var assert = require('assert');
-var async = require('async');
+const assert = require('assert');
+const async = require('async');
 
-var app = require('../../../server/server');
-var help = require('../../help.js');
-var fixtureData = require('../../fixtureData.js');
-var json = help.json;
+const app = require('../../../server/server');
+const help = require('../../help.js');
+const fixtureData = require('../../fixtureData.js');
+const json = help.json;
+const getAccessTokenByUser = help.getAccessTokenByUser;
 
 
-var admin = fixtureData.admin;
-var theone = fixtureData.theone;
-var foo = fixtureData.foo;
-var updateUser = fixtureData.updateUser;
-var deletedUser = fixtureData.deletedUser;
-var statusFalseUser = fixtureData.statusFalseUser;
+const admin = fixtureData.admin;
+const theone = fixtureData.theone;
+const foo = fixtureData.foo;
+const updateUser = fixtureData.updateUser;
+const deletedUser = fixtureData.deletedUser;
+const statusFalseUser = fixtureData.statusFalseUser;
 
-var usersData = [admin, theone, foo, updateUser, deletedUser, statusFalseUser];
+const usersData = [admin, theone, foo, updateUser, deletedUser, statusFalseUser];
 
-var adminAccessToken = '';
+let adminAccessToken;
 // var adminId = '';
 
 
-describe('admin login', function() {
+describe('admin login', () => {
+  // before(function(done) {
+  //   require('../../start-server');
+  //   done();
+  // });
 
-  before(function(done) {
-    require('../../start-server');
-    done();
-  });
-
-  after(function(done) {
+  after((done) => {
     app.removeAllListeners('started');
     app.removeAllListeners('loaded');
     done();
   });
 
-  before('初始化移除所有测试数据库数据', function (done) {
-    app.dataSources.mysqlDs.autoupdate('Admin',function (err) {
-      if(err) return done(err);
-
-      async.eachSeries(usersData, function (user, callback) {
-        app.models.Admin.upsert(user, callback);
-      }, done);
+  before('初始化移除所有测试数据库数据', (done) => {
+    app.dataSources.mysqlDs.autoupdate('Admin', (err) => {
+      if (err) {
+        done(err);
+      } else {
+        async.eachSeries(usersData, (user, callback) => {
+          app.models.Admin.upsert(user, callback);
+        }, done);
+      }
     });
   });
 
 
-  before('获取 admin 账号的 access_token', function (done) {
-    json('post','/api/admins/login')
-      .send({
-        username: admin.username,
-        password: admin.password
-      })
-      .expect(200, function (err, res) {
-        if(!err) {
-          adminAccessToken = res.body.id;
-        }
-        done(err);
-      });
+  before('获取 admin 账号的 access_token', (done) => {
+    getAccessTokenByUser(admin, (err, tokenId) => {
+      if (!err) {
+        adminAccessToken = tokenId;
+      }
+      done(err);
+    });
   });
 
-
-
-  describe('管理员账号登录', function () {
-
-    it('POST /api/admins/login use amdin account', function (done) {
-      json('post','/api/admins/login')
+  describe('管理员账号登录', () => {
+    it('POST /api/admins/login use amdin account', (done) => {
+      json('post', '/api/admins/login')
         .send({
           username: admin.username,
-          password: admin.password
+          password: admin.password,
         })
-        .expect(200, function (err, res) {
-          if(!err) {
+        .expect(200, (err, res) => {
+          if (!err) {
             adminAccessToken = res.body.id;
             // adminId = res.body.userId;
           }
@@ -87,63 +81,49 @@ describe('admin login', function() {
         });
     });
 
-    it('GET /api/admins with access_token', function (done) {
-      json('get','/api/admins?access_token='+adminAccessToken)
+    it('GET /api/admins with access_token', (done) => {
+      json('get', `/api/admins?access_token=${adminAccessToken}`)
         .expect(200, done);
     });
-
   });
 
-  describe('用户状态 deleted  status 不符合条件无法登录', function () {
-
-    it('POST /api/admins/login user delete is true', function (done) {
-      json('post','/api/admins/login')
+  describe('用户状态 deleted  status 不符合条件无法登录', () => {
+    it('POST /api/admins/login user delete is true', (done) => {
+      json('post', '/api/admins/login')
         .send({
           username: deletedUser.username,
-          password: deletedUser.password
+          password: deletedUser.password,
         })
-        .expect(401, function (err, res) {
+        .expect(401, (err, res) => {
           assert.equal('LOGIN_FAILED', res.body.error.code);
           done(err);
         });
     });
 
-    it('POST /api/admins/login user status is false', function (done) {
-      json('post','/api/admins/login')
+    it('POST /api/admins/login user status is false', (done) => {
+      json('post', '/api/admins/login')
         .send({
           username: statusFalseUser.username,
-          password: statusFalseUser.password
+          password: statusFalseUser.password,
         })
-        .expect(401, function (err, res) {
+        .expect(401, (err, res) => {
           assert.equal('LOGIN_FAILED', res.body.error.code);
           done(err);
         });
     });
-
   });
 
-  describe('用户状态正常, 符合登录条件 登录成功', function () {
-
-    it('POST /api/admins/login user status all true', function (done) {
-      json('post','/api/admins/login')
+  describe('用户状态正常, 符合登录条件 登录成功', () => {
+    it('POST /api/admins/login user status all true', (done) => {
+      json('post', '/api/admins/login')
         .send({
           username: theone.username,
-          password: theone.password
+          password: theone.password,
         })
-        .expect(200, function (err, res) {
+        .expect(200, (err, res) => {
           assert.equal(theone.id, res.body.userId);
           done(err);
         });
     });
-
   });
-
 });
-
-
-
-
-
-
-
-//
