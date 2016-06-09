@@ -3,14 +3,8 @@
     "name": "db",
     "connector": "memory"
   },
-  "mysqlDs": {
-    "host": "localhost",
-    "port": 3306,
-    "database": "loop_xinglong_test",
-    "password": "root",
+  "mysqlDs":{
     "name": "mysqlDs",
-    "connector": "mysql",
-    "debug": false,
-    "user": "root"
+    "connector": "memory"
   }
 }

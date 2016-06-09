@@ -55,17 +55,23 @@ describe('admin login', function() {
 
 
   before('获取 admin 账号的 access_token', function (done) {
-    json('post','/api/admins/login')
-      .send({
-        username: admin.username,
-        password: admin.password
-      })
-      .expect(200, function (err, res) {
-        if(!err) {
-          adminAccessToken = res.body.id;
-        }
-        done(err);
-      });
+    help.getAccessTokenByUser(admin, function (err, tokenId) {
+      if(!err) {
+        adminAccessToken = tokenId;
+      }
+      done(err);
+    });
+    // json('post','/api/admins/login')
+    //   .send({
+    //     username: admin.username,
+    //     password: admin.password
+    //   })
+    //   .expect(200, function (err, res) {
+    //     if(!err) {
+    //       adminAccessToken = res.body.id;
+    //     }
+    //     done(err);
+    //   });
   });
 
 

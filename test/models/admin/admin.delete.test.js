@@ -66,31 +66,21 @@ describe('admin delete', function() {
   });
 
   before('获取 admin 账号的 access_token', function (done) {
-    json('post','/api/admins/login')
-      .send({
-        username: admin.username,
-        password: admin.password
-      })
-      .expect(200, function (err, res) {
-        if(!err) {
-          adminAccessToken = res.body.id;
-        }
-        done(err);
-      });
+    help.getAccessTokenByUser(admin, function (err, tokenId) {
+      if(!err) {
+        adminAccessToken = tokenId;
+      }
+      done(err);
+    });
   });
 
   before('获取 foo 账号的 access_token', function (done) {
-    json('post','/api/admins/login')
-      .send({
-        username: foo.username,
-        password: foo.password
-      })
-      .expect(200, function (err, res) {
-        if(!err) {
-          fooAccessToken = res.body.id;
-        }
-        done(err);
-      });
+    help.getAccessTokenByUser(foo, function (err, tokenId) {
+      if(!err) {
+        fooAccessToken = tokenId;
+      }
+      done(err);
+    });
   });
 
   describe('普通用户无权 执行删除', function () {

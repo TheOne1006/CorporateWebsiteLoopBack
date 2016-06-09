@@ -15,10 +15,10 @@ const deletedUser = {id: 5, username:'deletedUser', password:'123456', email:'em
 const statusFalseUser = {id: 6, username:'statusUser', password:'123456', email:'email@status.com',description:'普通用户', status:false};
 
 module.exports = {
-  admin : admin,
-  theone : theone,
-  foo : foo,
-  updateUser : updateUser,
-  deletedUser : deletedUser,
-  statusFalseUser : statusFalseUser
+  admin,
+  theone,
+  foo,
+  updateUser,
+  deletedUser,
+  statusFalseUser,
 };

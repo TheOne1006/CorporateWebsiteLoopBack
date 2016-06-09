@@ -63,17 +63,12 @@ describe('admin register', function() {
 
 
   before('获取 admin 账号的 access_token', function (done) {
-    json('post','/api/admins/login')
-      .send({
-        username: admin.username,
-        password: admin.password
-      })
-      .expect(200, function (err, res) {
-        if(!err) {
-          adminAccessToken = res.body.id;
-        }
-        done(err);
-      });
+    help.getAccessTokenByUser(admin, function (err, tokenId) {
+      if(!err) {
+        adminAccessToken = tokenId;
+      }
+      done(err);
+    });
   });
 
 
@@ -86,7 +81,7 @@ describe('admin register', function() {
           username: 'newUser',
           password: '123456',
           description: 'test',
-          email: '291@qq.com'
+          email: '291@qq.com',
         })
         .expect(401, function (err, res) {
           // assert.equal('Authorization Required', res.body.error.message);
@@ -103,7 +98,7 @@ describe('admin register', function() {
       json('post','/api/admins/login')
         .send({
           username: foo.username,
-          password: foo.password
+          password: foo.password,
         })
         .expect(200, function (err, res) {
           if(!err) {
@@ -120,7 +115,7 @@ describe('admin register', function() {
           username: 'newUser',
           password: '123456',
           description: 'test',
-          email: '291@qq.com'
+          email: '291@qq.com',
         })
         .expect(401, function (err, res) {
           // console.log(res.body);
