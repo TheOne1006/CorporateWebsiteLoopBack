@@ -1,5 +1,3 @@
-'use strict';
-
 const debug = require('debug')('app:models:admin');
 
 module.exports = (Admin) => {
